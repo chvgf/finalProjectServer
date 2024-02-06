@@ -1,14 +1,13 @@
-const express = require('express')
-const passport = require('passport')
-const bcrypt = require('bcrypt')
-const { client } = require('../database/index');
-const db = client.db('lastTeamProject');
+const express = require("express");
+const passport = require("passport");
+const bcrypt = require("bcrypt");
+const { client } = require("../database/index");
+const db = client.db("lastTeamProject");
 const router = express.Router();
-const multer = require('multer');
-const multerS3 = require('multer-s3');
-const { S3Client } = require('@aws-sdk/client-s3');
-const { ObjectId } = require('mongodb');
-
+const multer = require("multer");
+const multerS3 = require("multer-s3");
+const { S3Client } = require("@aws-sdk/client-s3");
+const { ObjectId } = require("mongodb");
 
 /**
  * @swagger
@@ -17,46 +16,42 @@ const { ObjectId } = require('mongodb');
  *  description: 로그인 및 회원가입
  */
 
-
 // 회원가입
 // ejs 추후 삭제
-router.get('/register', async (req, res) => {
+router.get("/register", async (req, res) => {
   // res.render('register');
   try {
-    const signUserInfoGet = await db.collection('userInfo').findOne({})
+    const signUserInfoGet = await db.collection("userInfo").findOne({});
     res.json({
       flag: true,
-      message: '회원 정보 받음',
-      data: signUserInfoGet
-    })
+      message: "회원 정보 받음",
+      data: signUserInfoGet,
+    });
   } catch (error) {
     console.error(error);
   }
-
 });
 
 // 프로필
 const s3 = new S3Client({
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY,
-    secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET
+    secretAccessKey: process.env.AWS_ACCESS_KEY_SECRET,
   },
-  region: 'ap-northeast-2'
+  region: "ap-northeast-2",
 });
 
 const upload = multer({
   storage: multerS3({
     s3,
-    bucket: 'profileltp', // 만든 버킷 이름
-    key(req, file, cb) { // 원본 파일명을 쓰고 싶으면 file 안에 들어있음
+    bucket: "profileltp", // 만든 버킷 이름
+    key(req, file, cb) {
+      // 원본 파일명을 쓰고 싶으면 file 안에 들어있음
       cb(null, `original/${Date.now()}_${file.originalname}`); // 업로드 시 파일명
-    }
+    },
   }),
-  limits: { fileSize: 5 * 1024 * 1024 } // 파일 사이즈(바이트 단위): 5MB로 제한(그 이상 업로드 시 400번대 에러 발생)
+  limits: { fileSize: 5 * 1024 * 1024 }, // 파일 사이즈(바이트 단위): 5MB로 제한(그 이상 업로드 시 400번대 에러 발생)
 });
-
-
-
 
 /**
  * @swagger
@@ -108,45 +103,54 @@ const upload = multer({
  *         description: 서버 오류
  */
 
-
-router.post('/register', async (req, res) => {
+router.post("/register", async (req, res) => {
   console.log(req.body);
-  const { userId, passwd, signEmail, signUserNicname, signDogType, signDogAge, signDogWeight, signDogName } = req.body
+  const {
+    userId,
+    passwd,
+    signEmail,
+    signUserNicname,
+    signDogType,
+    signDogAge,
+    signDogWeight,
+    signDogName,
+  } = req.body;
 
   // 정규표현식
   const userIdRegex = /^[a-zA-Z0-9]{4,10}$/;
 
   try {
-    if (userId === '') {
-      throw new Error('ID를 입력해주세요!');
+    if (userId === "") {
+      throw new Error("ID를 입력해주세요!");
     }
 
-    if (signEmail === '') {
-      throw new Error('이메일을 입력해주세요!')
+    if (signEmail === "") {
+      throw new Error("이메일을 입력해주세요!");
     }
 
-    if (passwd === '') {
-      throw new Error('비밀번호를 입력해주세요!')
-
+    if (passwd === "") {
+      throw new Error("비밀번호를 입력해주세요!");
     }
 
     if (!userIdRegex.test(userId)) {
-      throw new Error('ID는 4자 이상 10자 이하 알파벳 대소문자, 숫자로만 구성되어야 합니다.');
+      throw new Error(
+        "ID는 4자 이상 10자 이하 알파벳 대소문자, 숫자로만 구성되어야 합니다."
+      );
     }
 
-    const existUser = await db.collection('userInfo').findOne({ userId })
+    const existUser = await db.collection("userInfo").findOne({ userId });
     if (existUser) {
-      throw new Error('존재하는 ID 입니다')
+      throw new Error("존재하는 ID 입니다");
     }
 
-    const existEmail = await db.collection('userInfo').findOne({ signEmail })
+    const existEmail = await db.collection("userInfo").findOne({ signEmail });
     if (existEmail) {
-      throw new Error('존재하는 이메일 입니다')
+      throw new Error("존재하는 이메일 입니다");
     }
 
-    const hash = await bcrypt.hash(passwd, 12)
+    const hash = await bcrypt.hash(passwd, 12);
 
-    await db.collection('userInfo').insertOne({
+    await db.collection("userInfo").insertOne({
       userId,
       passwd: hash,
       signEmail,
@@ -156,7 +160,6 @@ router.post('/register', async (req, res) => {
       signDogWeight,
       signDogName,
 
-
       // userId,
       // passwd: hash,
       // email,
@@ -164,85 +167,78 @@ router.post('/register', async (req, res) => {
       // dogSpecies,
       // dogAge,
       // dogName,
-      imgUrl: req.file?.location || '',
-
-    })
+      imgUrl: req.file?.location || "",
+    });
 
     res.json({
       flag: true,
-      message: '회원 가입 성공',
-
-    })
-
+      message: "회원 가입 성공",
+    });
   } catch (error) {
     console.error(error);
     res.json({
       flag: false,
       message: error.message,
-    })
+    });
   }
-})
-
-
+});
 
 // 로그인 불러오기
-router.get('/login', async (req, res) => {
+router.get("/login", async (req, res) => {
   try {
     if (req.user) {
       const userId = req.user._id;
-      const result = await db.collection('userInfo').findOne({ _id: userId });
+      const result = await db.collection("userInfo").findOne({ _id: userId });
       res.json({
         flag: true,
-        message: '불러오기 성공',
-        data: result
-      })
+        message: "불러오기 성공",
+        data: result,
+      });
     } else {
       res.json({
         flag: false,
-        message: '비로그인 상태',
-      })
+        message: "비로그인 상태",
+      });
     }
   } catch (error) {
     console.error(error);
     res.json({
       flag: false,
-      message: '로그인 상태가 아님'
-    })
+      message: "로그인 상태가 아님",
+    });
   }
-})
-
+});
 
 // 로그인
-router.post('/login', (req, res, next) => {
+router.post("/login", (req, res, next) => {
   try {
-    passport.authenticate('local', (authError, user, info) => {
+    passport.authenticate("local", (authError, user, info) => {
       if (authError) {
-        return res.json(authError)
+        return res.json(authError);
       }
       if (!user) {
-        return res.json(info.message)
+        return res.json(info.message);
       }
-  
+
       req.login(user, (loginError) => {
         if (loginError) return next(loginError);
         // res.redirect('/')
-  
+
         res.json({
           flag: true,
-          message: '로그인 성공',
-          user
-        })
-      })
+          message: "로그인 성공",
+          user,
+        });
+      });
     })(req, res, next);
   } catch (err) {
     console.error(err);
     res.json({
       flag: false,
-      message: '에러발생'
+      message: "에러발생",
     });
   }
 });
-
 
 // router.get('/loginUser', (req, res) => {
 //   res.json({
@@ -252,100 +248,102 @@ router.post('/login', (req, res, next) => {
 //   })
 // })
 
-
 // 로그아웃
-router.get('/logout', (req, res, next) => {
+router.get("/logout", (req, res, next) => {
   try {
     req.logout((logoutError) => {
-      if (logoutError) return next(logoutError)
+      if (logoutError) return next(logoutError);
       // res.redirect('/');
       res.json({
         flag: true,
-        message: '로그아웃 되었습니다'
-      })
-    })
+        message: "로그아웃 되었습니다",
+      });
+    });
   } catch (err) {
     console.error(err);
     res.json({
       flag: false,
-      message: '에러발생, 로그아웃 실패'
+      message: "에러발생, 로그아웃 실패",
     });
   }
-})
+});
 
 // 유저 정보 주기(마이페이지)
-router.get('/getUserInfo', async (req, res) => {
+router.get("/getUserInfo", async (req, res) => {
   try {
     const user = req.user._id;
-    const result = await db.collection('userInfo').findOne( {_id: user });
+    const result = await db.collection("userInfo").findOne({ _id: user });
     console.log(result);
     res.json({
       flag: true,
       result,
-    })
+    });
   } catch (error) {
     console.error(error);
     res.json({
       flag: false,
-      message: '페이지를 불러오는 중 에러가 발생했습니다.'
+      message: "페이지를 불러오는 중 에러가 발생했습니다.",
     });
   }
 });
 
 // 유저 정보 변경
-router.post('/editPersonalInfo', async (req, res) => {
+router.post("/editPersonalInfo", async (req, res) => {
   try {
     const { nick, dogType, dogName, dogAge } = req.body;
     const user = req.user._id;
-    if (nick === '') {
-      throw new Error('닉네임을 입력해주세요!');
+    if (nick === "") {
+      throw new Error("닉네임을 입력해주세요!");
     }
-    if (dogName === '') {
-      throw new Error('강아지 이름을 입력해주세요!');
+    if (dogName === "") {
+      throw new Error("강아지 이름을 입력해주세요!");
     }
-    if (dogAge === '') {
-      throw new Error('강아지 나이를 입력해주세요!');
+    if (dogAge === "") {
+      throw new Error("강아지 나이를 입력해주세요!");
     }
 
-    await db.collection('userInfo').updateOne({ _id: user },{ $set: {
-      signUserNicname: nick,
-      signDogType: dogType,
-      signDogAge: dogAge,
-      signDogName: dogName,
-    }
-    });
-    const result = await db.collection('userInfo').findOne({ _id: user });
+    await db.collection("userInfo").updateOne(
+      { _id: user },
+      {
+        $set: {
+          signUserNicname: nick,
+          signDogType: dogType,
+          signDogAge: dogAge,
+          signDogName: dogName,
+        },
+      }
+    );
+    const result = await db.collection("userInfo").findOne({ _id: user });
     res.json({
       flag: true,
-      message: '회원 정보 수정 성공',
-      result
-    })
+      message: "회원 정보 수정 성공",
+      result,
+    });
   } catch (error) {
     console.error(error);
     res.json({
       flag: false,
-      message: error.message
-    })
+      message: error.message,
+    });
   }
 });
 
 // 회원 탈퇴
-router.get('/accoutQuit', async (req, res) => {
+router.get("/accoutQuit", async (req, res) => {
   try {
-    await db.collection('userInfo').deleteOne({
-      _id: req.user._id
+    await db.collection("userInfo").deleteOne({
+      _id: req.user._id,
     });
     res.json({
       flag: true,
-      message: '회원 탈퇴 성공'
-    })
+      message: "회원 탈퇴 성공",
+    });
   } catch (err) {
     res.json({
       flag: false,
-      message: '회원 탈퇴 실패'
-    })
+      message: "회원 탈퇴 실패",
+    });
   }
 });
-
 
 module.exports = router;
