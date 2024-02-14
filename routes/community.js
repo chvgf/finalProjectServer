@@ -693,7 +693,7 @@ router.get("/toktok/detail/:postId", async (req, res) => {
 // 커뮤니티 삽입_육아톡톡
 router.post("/toktok/insert", upload.single("imgUrl"), async (req, res) => {
   try {
-    console.log("오ㅓㅐㅔ시발" + req.user);
+    console.log("왜왜?" + req.body.로그인중);
     const mydate = new Date();
     // const userId = req.user._id;
     // const inputdata = req.body.inputdata;
@@ -704,7 +704,8 @@ router.post("/toktok/insert", upload.single("imgUrl"), async (req, res) => {
     const imgKey = req.file?.key || "";
     const like = [];
     const view = [];
-    const user = req.user || "";
+    // const user = req.user || "";
+    const user = req.body.로그인중 || "";
     const date = mydate;
     // await db.collection('community').insertOne({...inputdata, userId, imgUrl});
     await db.collection("community").insertOne({
