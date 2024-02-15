@@ -31,7 +31,7 @@ const s3 = new S3Client({
 const upload = multer({
   storage: multerS3({
     s3,
-    bucket: "finaltp",
+    bucket: "jwboard",
     key(req, file, cb) {
       cb(null, `original/${Date.now()}_${file.originalname}`);
     },
@@ -230,6 +230,7 @@ router.post("/daily/insert", async (req, res) => {
 
     let imgUrl = req.body.imgUrl || "";
     let imgKey = req.body.imgKey || "";
+    let user = req.user || "";
 
     // s3_delete
     if (imgKey) {
@@ -254,6 +255,7 @@ router.post("/daily/insert", async (req, res) => {
     }
 
     await db.collection("community").insertOne({
+      user,
       id,
       title,
       content,
@@ -693,7 +695,6 @@ router.get("/toktok/detail/:postId", async (req, res) => {
 // 커뮤니티 삽입_육아톡톡
 router.post("/toktok/insert", upload.single("imgUrl"), async (req, res) => {
   try {
-    console.log("왜왜?" + req.body.로그인중);
     const mydate = new Date();
     // const userId = req.user._id;
     // const inputdata = req.body.inputdata;
@@ -704,8 +705,8 @@ router.post("/toktok/insert", upload.single("imgUrl"), async (req, res) => {
     const imgKey = req.file?.key || "";
     const like = [];
     const view = [];
-    // const user = req.user || "";
-    const user = req.body.로그인중 || "";
+    const user = req.user || "";
+    // const user = req.body.user || "";
     const date = mydate;
     // await db.collection('community').insertOne({...inputdata, userId, imgUrl});
     await db.collection("community").insertOne({

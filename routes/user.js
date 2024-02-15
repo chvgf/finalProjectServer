@@ -44,7 +44,7 @@ const s3 = new S3Client({
 const upload = multer({
   storage: multerS3({
     s3,
-    bucket: "profileltp", // 만든 버킷 이름
+    bucket: "jwboard", // 만든 버킷 이름
     key(req, file, cb) {
       // 원본 파일명을 쓰고 싶으면 file 안에 들어있음
       cb(null, `original/${Date.now()}_${file.originalname}`); // 업로드 시 파일명
@@ -105,16 +105,7 @@ const upload = multer({
 
 router.post("/register", async (req, res) => {
   console.log(req.body);
-  const {
-    userId,
-    passwd,
-    signEmail,
-    signUserNicname,
-    signDogType,
-    signDogAge,
-    signDogWeight,
-    signDogName,
-  } = req.body;
+  const { userId, passwd, signEmail, signUserNicname, signDogType, signDogAge, signDogWeight, signDogName } = req.body;
 
   // 정규표현식
   const userIdRegex = /^[a-zA-Z0-9]{4,10}$/;
@@ -133,9 +124,7 @@ router.post("/register", async (req, res) => {
     }
 
     if (!userIdRegex.test(userId)) {
-      throw new Error(
-        "ID는 4자 이상 10자 이하 알파벳 대소문자, 숫자로만 구성되어야 합니다."
-      );
+      throw new Error("ID는 4자 이상 10자 이하 알파벳 대소문자, 숫자로만 구성되어야 합니다.");
     }
 
     const existUser = await db.collection("userInfo").findOne({ userId });
