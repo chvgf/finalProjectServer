@@ -12,8 +12,6 @@ https://cdn-pro-web-218-48.cdn-nhncommerce.com/krystal1581463850_godomall_com/da
 https://petdome.co.kr/data/goods/76/2023/04/98992_temp_16824121177096view.jpg
 https://image.hmall.com/static/5/4/09/17/2117094504_0.jpg?RS=600x600&AR=0
 
-
-
   <!-- 상품 다음버튼 테스트 -->
   <hr>
   <% posts.forEach((post) => { %>
@@ -23,4 +21,17 @@ https://image.hmall.com/static/5/4/09/17/2117094504_0.jpg?RS=600x600&AR=0
   <div></div>
   <div class="next-bg">
     <a href="/community/shop/feed?nextId=<%= posts[posts.length - 1]?._id %>">다음</a>
+  </div>
+
+    <hr>
+
+  <h1>좋아요 테스트</h1>
+  <input type="text" id="name" name="name">닉네임
+  <div id="like">♥</div>
+  <div>
+    <% if (!post.like) { %>
+      0
+    <% } else { %>
+      <%= post.like.length %>
+    <% } %>
   </div>

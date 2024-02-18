@@ -454,4 +454,11 @@ router.get("/purchase", async (req, res) => {
   }
 });
 
+router.get("/abcd", async (req, res) => {
+  // 샵 관리자 ejs get요청
+  try {
+    res.render("../views/write");
+  } catch (error) {}
+});
+
 module.exports = router;

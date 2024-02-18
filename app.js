@@ -146,10 +146,7 @@ app.get("/getChatHeaderList", async (req, res) => {
       throw new Error("로그인을 해주세요!");
     }
     const loginUser = req.user.userId;
-    const resulte = await db
-      .collection("chat")
-      .find({ room: loginUser.toString() })
-      .toArray();
+    const resulte = await db.collection("chat").find({ room: loginUser.toString() }).toArray();
     console.log("resulte" + resulte);
     let chatData = resulte.map((room) => {
       let lastChat = room.chatList.pop();
@@ -225,34 +222,18 @@ app.post(`/inChating`, async (req, res) => {
       throw new Error("상대방을 찾을 수 없습니다!");
     }
     const loginUser = req.user.userId;
-    const findChat = await db
-      .collection("chat")
-      .findOne({ room: [room, user2] });
+    const findChat = await db.collection("chat").findOne({ room: [room, user2] });
     if (!findChat) {
-      const findChatDetail = await db
-        .collection("chat")
-        .findOne({ room: [user2, room] });
+      const findChatDetail = await db.collection("chat").findOne({ room: [user2, room] });
       if (!findChatDetail) {
-        await db
-          .collection("chat")
-          .insertOne({ room: [room, user2], user1: room, user2: user2 });
+        await db.collection("chat").insertOne({ room: [room, user2], user1: room, user2: user2 });
       }
     }
 
     const listData = { user: id, msg: msg, chatTime };
-    const isUpdate = await db
-      .collection("chat")
-      .updateOne(
-        { user1: id, user2: user2 },
-        { $push: { chatList: { ...listData } } }
-      );
+    const isUpdate = await db.collection("chat").updateOne({ user1: id, user2: user2 }, { $push: { chatList: { ...listData } } });
     if (isUpdate.matchedCount === 0) {
-      await db
-        .collection("chat")
-        .updateOne(
-          { user1: user2, user2: id },
-          { $push: { chatList: { ...listData } } }
-        );
+      await db.collection("chat").updateOne({ user1: user2, user2: id }, { $push: { chatList: { ...listData } } });
     }
 
     let resulte = await db.collection("chat").findOne({ room: [id, user2] });
@@ -267,10 +248,7 @@ app.post(`/inChating`, async (req, res) => {
     console.log("룸" + lastChatRoom);
     console.log("로그인유저" + loginUser.toString());
     console.log("유저2" + user2.toString());
-    if (
-      lastChatRoom.find((user) => user == loginUser.toString()) &&
-      lastChatRoom.find((user) => user == user2.toString())
-    ) {
+    if (lastChatRoom.find((user) => user == loginUser.toString()) && lastChatRoom.find((user) => user == user2.toString())) {
       io.to(resulte.room).emit("updateChatDetail", chatData);
       console.log("이프실행");
     }
