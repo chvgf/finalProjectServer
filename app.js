@@ -46,7 +46,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(
   cors({
     // origin: 'https://minton1000.netlify.app',
-    origin: ["https://jwc-mymung.netlify.app", "http://localhost:3000"],
+    origin: ["https://jwc-mymung.netlify.app", "http://localhost:3000", "http://localhost:3001"],
     credentials: true,
   })
 );
